@@ -1,0 +1,9 @@
+# Ignore les fichiers terraform sensibble comme les variables, IP...
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform/
+
+# Machine locale
+.DS_Store
+.vscode/
