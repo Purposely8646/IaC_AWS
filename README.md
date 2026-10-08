@@ -1,4 +1,4 @@
-# Industrialisation d'un VPC AWS existant avec Terraform
+# Importation d'un VPC AWS existant avec Terraform
 
 ## Contexte
 
