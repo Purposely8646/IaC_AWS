@@ -89,6 +89,40 @@ Une fois l'AZ1 fidèlement capturée, le code sera généralisé via `for_each` 
 | Exposition | 1 Application Load Balancer, 1 Listener, 1 Target Group, 1 Target Group Attachment |
 | Adressage | 4 Elastic IP |
 
+## Difficultés rencontrées
+
+### Configuration générée imparfaite
+
+`terraform plan -generate-config-out` a produit un fichier d'environ 800 lignes,
+mais le code généré automatiquement n'était ni syntaxiquement propre ni directement
+exploitable. Une correction manuelle a été nécessaire sur la quasi-totalité des
+blocs de ressources, notamment :
+
+- des auto-références (une ressource pointant vers son propre attribut au lieu
+  d'une valeur littérale ou d'une référence vers une autre ressource)
+- des arguments générés mais invalides pour le type de ressource concerné
+- des références manquantes aux autres ressources importées, remplacées par des
+  IDs bruts à corriger en adresses Terraform (ex: `aws_lb.alb.arn` plutôt que
+  l'ARN en dur)
+- des types de données mal formés (listes attendues vs valeurs uniques, format
+  CIDR manquant sur certains blocs d'IP)
+
+### Un `plan` propre n'a pas suffi à garantir un `apply` réussi
+
+Le premier `terraform apply`, lancé après un `plan` jugé correct, a échoué avec
+une nouvelle série d'erreurs non détectées en amont. `terraform plan` valide la
+cohérence syntaxique et logique du code, mais certains problèmes (contraintes
+spécifiques au provider AWS, comportements liés à l'exécution réelle des appels
+API) ne se révèlent qu'au moment où Terraform agit concrètement sur l'infrastructure.
+Une refonte plus large du code a été nécessaire avant qu'un second `apply` aboutisse.
+
+### Limite assumée
+
+Certains comportements de la configuration générée restent encore partiellement
+compris : la correction a été menée de façon empirique (test, observation du
+résultat, ajustement), sans toujours identifier la cause racine exacte côté
+provider Terraform.
+
 ## Compétences mises en pratique
 
 - **AWS CLI** : extraction de données structurées avec JMESPath (filtres, projections, jointures)
