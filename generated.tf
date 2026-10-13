@@ -11,54 +11,46 @@ resource "aws_vpc" "name" {
 }
 # __generated__ by Terraform from "sg-0a16ebdd5b719dc9c"
 resource "aws_security_group" "sg_alb" {
-  description = "Equilibreur"
-  egress = [{
-    cidr_blocks      = []
-    description      = ""
-    from_port        = 443
-    ipv6_cidr_blocks = []
-    prefix_list_ids  = []
-    protocol         = "tcp"
-    security_groups  = aws_security_group.sg_alb.id
-    self             = false
-    to_port          = 443
-    }, {
-    cidr_blocks      = []
-    description      = ""
-    from_port        = 80
-    ipv6_cidr_blocks = []
-    prefix_list_ids  = []
-    protocol         = "tcp"
-    security_groups  = aws_security_group.sg_alb.id
-    self             = false
-    to_port          = 80
-  }]
-  ingress = [{
-    cidr_blocks      = ["0.0.0.0/0"]
-    description      = ""
-    from_port        = 443
-    ipv6_cidr_blocks = []
-    prefix_list_ids  = []
-    protocol         = "tcp"
-    security_groups  = []
-    self             = false
-    to_port          = 443
-    }, {
-    cidr_blocks      = ["0.0.0.0/0"]
-    description      = ""
-    from_port        = 80
-    ipv6_cidr_blocks = []
-    prefix_list_ids  = []
-    protocol         = "tcp"
-    security_groups  = []
-    self             = false
-    to_port          = 80
-  }]
+  description = "SG de l'ALB qui envoie le traffic au srv-web et reçois de tout le monde"
   name                   = "ALB"
   revoke_rules_on_delete = null
   tags                   = {}
   tags_all               = {}
   vpc_id                 = aws_vpc.name.id
+}
+
+# Création des règles entrantes et sortantes de sg-alb
+resource "aws_vpc_security_group_egress_rule" "sg_alb_eg_HTTPS" {
+    security_group_id  = aws_security_group.sg_alb.id
+    referenced_security_group_id = aws_security_group.sg_web.id
+    description      = ""
+    from_port        = 443
+    ip_protocol      = "tcp"
+    to_port          = 443
+}
+resource "aws_vpc_security_group_egress_rule" "sg_alb_eg_HTTP" {
+    security_group_id = aws_security_group.sg_alb.id
+    referenced_security_group_id = aws_security_group.sg_web.id
+    from_port        = 80
+    ip_protocol      = "tcp"
+    to_port          = 80
+}
+    
+resource "aws_vpc_security_group_ingress_rule" "sg_alb_in_HTTPS" {
+    security_group_id = aws_security_group.sg_alb.id
+    cidr_ipv4         = "0.0.0.0/0"
+    from_port         = 443
+    ip_protocol       = "tcp"
+    to_port           = 443
+}
+
+resource "aws_vpc_security_group_ingress_rule" "sg_alb_in_HTTP" {
+    security_group_id = aws_security_group.sg_alb.id
+    cidr_ipv4         = "0.0.0.0/0"
+    description       = ""
+    from_port         = 80
+    ip_protocol       = "tcp"
+    to_port           = 80
 }
 
 # __generated__ by Terraform
@@ -723,8 +715,8 @@ resource "aws_route_table_association" "asso3" {
 resource "aws_route_table_association" "asso4" {
   gateway_id = null
   region = "eu-west-3"
-  route_table_id = aws_route_table.route3
-  subnet_id = aws_subnet.private_az2
+  route_table_id = aws_route_table.route3.id
+  subnet_id = aws_subnet.private_az2.id
 }
 
 resource "aws_route_table_association" "asso5" {
@@ -736,7 +728,7 @@ resource "aws_route_table_association" "asso5" {
 resource "aws_main_route_table_association" "asso6" {
   vpc_id = aws_vpc.name.id
   region = "eu-west-3"
-  route_table_id = aws_route_table.route5
+  route_table_id = aws_route_table.route5.id
 }
 
 # __generated__ by Terraform
