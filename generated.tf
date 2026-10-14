@@ -547,7 +547,7 @@ resource "aws_security_group" "sg_web" {
   vpc_id                 = aws_vpc.name.id
 }
 
-# __generated__ by Terraform from "arn:aws:elasticloadbalancing:eu-west-3:233231935533:listener/app/ALB/4c1cbebdff5cb4a0/cf673a7ca9e0691f"
+
 resource "aws_lb_listener" "listen" {
   alpn_policy                          = null
   certificate_arn                      = null
